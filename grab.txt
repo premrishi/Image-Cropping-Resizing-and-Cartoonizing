@@ -1,0 +1,42 @@
+import numpy as np
+from PIL import Image, ImageDraw, ImageFilter
+import cv2
+from matplotlib import pyplot as plt
+    
+img = cv2.imread('C:/Users/DELL/Desktop/IMG_20200323_204319686_HDR.jpg', cv2.IMREAD_UNCHANGED)
+dimensions = img.shape
+    
+height = img.shape[0]
+width = img.shape[1]
+channels = img.shape[2]
+    
+    
+mask = np.zeros(img.shape[:2],np.uint8)
+    
+bgdModel = np.zeros((1,65),np.float64)
+fgdModel = np.zeros((1,65),np.float64)
+    
+rect = (1,1,width,height)
+cv2.grabCut(img,mask,rect,bgdModel,fgdModel,5,cv2.GC_INIT_WITH_RECT)
+mask2 = np.where((mask==2)|(mask==0),0,1).astype('uint8')
+img = img*mask2[:,:,np.newaxis]
+cv2.imwrite("test.png", img)
+tmp = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+_,alpha = cv2.threshold(tmp,0,255,cv2.THRESH_BINARY)
+b, g, r = cv2.split(img)
+rgba = [b,g,r, alpha]
+dst = cv2.merge(rgba,4)
+cv2.imwrite("testdst.png", dst)
+plt.axis("off")
+plt.imshow(cv2.cvtColor(dst, cv2.COLOR_BGR2RGB))
+plt.show()
+
+im_rgb = Image.open('testdst.png')
+
+im_a = Image.open('C:/Users/DELL/Desktop/1a31f5f975be14e10e9a345cb91d1080.png').convert('L').resize(im_rgb.size)
+
+im_rgba = im_rgb.copy()
+im_rgba.putalpha(im_a)
+im_rgba.save('C:/Users/DELL/Desktop/ntg.png')
+plt.imshow(im_rgba)
+plt.show
